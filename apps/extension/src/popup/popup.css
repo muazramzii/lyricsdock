@@ -1,0 +1,150 @@
+:root {
+  color-scheme: dark;
+  --ink-1: #f4f6fb;
+  --ink-2: rgba(232, 236, 245, 0.7);
+  --ink-3: rgba(232, 236, 245, 0.48);
+  --line: rgba(255, 255, 255, 0.1);
+  --accent: #8fb3ff;
+  --ok: #8fe0b0;
+  --warn: #f2c879;
+  font:
+    13px/1.4 'Segoe UI Variable Text',
+    'Segoe UI',
+    system-ui,
+    sans-serif;
+  color: var(--ink-1);
+}
+
+body {
+  margin: 0;
+  width: 320px;
+  background: #16181d;
+}
+
+.popup {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.card {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  font-weight: 600;
+}
+
+.status::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ink-3);
+}
+
+.status[data-tone='ok']::before {
+  background: var(--ok);
+}
+
+.status[data-tone='warn']::before {
+  background: var(--warn);
+}
+
+.hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+
+.track {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.track.muted {
+  color: var(--ink-3);
+}
+
+.row {
+  display: flex;
+  gap: 6px;
+}
+
+input {
+  flex: 1;
+  min-width: 0;
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 7px;
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--ink-1);
+  font:
+    12.5px 'Cascadia Mono',
+    Consolas,
+    monospace;
+  letter-spacing: 0.04em;
+}
+
+button {
+  height: 30px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 7px;
+  background: var(--accent);
+  color: #0d1220;
+  font: inherit;
+  font-weight: 600;
+}
+
+button:hover {
+  filter: brightness(1.08);
+}
+
+.link {
+  justify-self: start;
+  height: auto;
+  padding: 0;
+  background: none;
+  color: var(--ink-2);
+  font-weight: 400;
+  font-size: 12px;
+  text-decoration: underline;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

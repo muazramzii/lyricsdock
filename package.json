@@ -1,0 +1,42 @@
+{
+  "name": "lyricsdock",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Floating synchronized-lyrics overlay for Windows with a Brave companion extension.",
+  "license": "MIT",
+  "workspaces": [
+    "packages/shared",
+    "apps/desktop",
+    "apps/extension"
+  ],
+  "scripts": {
+    "dev": "npm run tauri:dev -w @lyricsdock/desktop",
+    "build": "npm run build -w @lyricsdock/desktop && npm run build -w @lyricsdock/extension",
+    "build:extension": "npm run build -w @lyricsdock/extension",
+    "build:desktop": "npm run tauri:build -w @lyricsdock/desktop",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -p packages/shared && tsc -p apps/desktop && tsc -p apps/extension",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm run test && npm run build"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.15.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.14.0",
+    "prettier": "^3.10.1",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.73.0",
+    "vitest": "^5.1.0"
+  },
+  "overrides": {
+    "jsdom": "^29.1.1"
+  },
+  "type": "module"
+}

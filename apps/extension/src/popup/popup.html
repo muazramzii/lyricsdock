@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="color-scheme" content="dark" />
+    <title>LyricsDock</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="popup">
+      <header class="head">
+        <img src="icons/icon-32.png" width="20" height="20" alt="" />
+        <h1>LyricsDock</h1>
+      </header>
+
+      <section class="card" aria-labelledby="conn-label">
+        <p class="label" id="conn-label">Desktop app</p>
+        <p class="status" id="status" data-tone="off">Checking…</p>
+        <p class="hint" id="hint"></p>
+      </section>
+
+      <section class="card" aria-labelledby="track-label">
+        <p class="label" id="track-label">Detected track</p>
+        <p class="track" id="track">Nothing playing on YouTube</p>
+      </section>
+
+      <form class="card pair" id="pair-form">
+        <label class="label" for="key">Pairing key</label>
+        <div class="row">
+          <input
+            id="key"
+            name="key"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="XXXX-XXXX-XXXX-XXXX"
+            maxlength="40"
+          />
+          <button type="submit">Pair</button>
+        </div>
+        <p class="hint">Find it in LyricsDock → Settings → Browser.</p>
+        <button type="button" class="link" id="forget" hidden>Forget key</button>
+      </form>
+    </main>
+    <script src="popup.js" type="module"></script>
+  </body>
+</html>
