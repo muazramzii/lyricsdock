@@ -5,7 +5,7 @@ A small, always-on-top lyrics overlay for Windows. Play a song on YouTube or You
 - **Free, no account, no API key.** Lyrics come from the public [LRCLIB](https://lrclib.net) database.
 - **Synced when possible.** Timestamped lyrics follow the real playback position: pause, seek, speed changes and track changes are all tracked. Plain lyrics are shown when there are no timestamps, and clearly labelled "Not synced".
 - **Private.** No telemetry, ads or tracking. No audio is recorded or captured. Only the track title, artist and length are sent to LRCLIB to find lyrics.
-- **Light.** A ~5 MB Tauri app plus a ~17 KB browser extension. The overlay sleeps between lyric lines instead of polling.
+- **Light.** A 3.5 MB app (1.3 MB installer) plus a ~17 KB browser extension. The overlay sleeps between lyric lines instead of polling.
 
 ```
 ┌──────────────────────────────────────────────┐
@@ -29,7 +29,7 @@ The extension reads the `<video>` element (position, duration, paused, rate) and
 
 ## Install (Windows 10/11 x64)
 
-1. Install LyricsDock with the installer from `apps/desktop/src-tauri/target/release/bundle/nsis/` (see _Build_ below), or run it from source.
+1. Build the installer with `npm run build:desktop` and run `apps/desktop/src-tauri/target/release/bundle/nsis/LyricsDock_0.1.0_x64-setup.exe` (per-user install, no admin needed). An MSI is produced next to it in `bundle/msi/`. You can also run from source with `npm run dev`.
 2. Load the extension in Brave, following **[docs/BRAVE_SETUP.md](docs/BRAVE_SETUP.md)**:
    1. Open `brave://extensions`.
    2. Turn on **Developer mode**.

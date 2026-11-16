@@ -28,6 +28,15 @@ Everything below was exercised against the real running app (`tauri dev`), not m
   - Closing the tab returned the overlay to _Waiting for music_.
 - **Visual:** overlay (idle, demo with hover controls) and settings screens checked in a browser at real overlay size.
 
+## Packaging (`npm run build:desktop`)
+
+- Release build: `apps/desktop/src-tauri/target/release/lyricsdock.exe` (3.5 MB).
+- Installers:
+  - `apps/desktop/src-tauri/target/release/bundle/nsis/LyricsDock_0.1.0_x64-setup.exe` (1.27 MiB, per-user)
+  - `apps/desktop/src-tauri/target/release/bundle/msi/LyricsDock_0.1.0_x64_en-US.msi` (1.80 MiB)
+- Release exe smoke test: overlay at bottom-right, topmost, bridge listening on `127.0.0.1:47811` and refusing web origins, about 7 MB private memory (excluding shared WebView2 processes).
+- Not done: running the installers themselves (it would modify this machine). The installers are unsigned, so SmartScreen will warn.
+
 ## Manual Windows checklist (needs a person at the machine)
 
 Run the installed app or `npm run dev`, with Brave and the extension loaded.

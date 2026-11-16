@@ -55,9 +55,9 @@ Automated run (real extension in Brave → bridge → running overlay, read via 
 - App icon and consistent dark visual identity.
 - 🟡 Contrast was checked by design tokens, not with a measuring tool. High-contrast Windows themes were not tested.
 
-## Phase 7: Packaging
+## Phase 7: Packaging ✅ / 🟡
 
-- `tauri build` → NSIS (per-user) and MSI. See `docs/TESTING.md` for the build result and paths.
+- `tauri build` produced `bundle/nsis/LyricsDock_0.1.0_x64-setup.exe` (1.27 MiB) and `bundle/msi/LyricsDock_0.1.0_x64_en-US.msi` (1.80 MiB). The release exe was smoke-tested. 🟡 The installers were not executed on this machine; install/uninstall is on the manual checklist.
 - Uninstall steps are in `docs/TROUBLESHOOTING.md`. There is no native-messaging registration to remove.
 
 ## Known gaps / next steps
