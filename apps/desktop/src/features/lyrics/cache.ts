@@ -9,7 +9,13 @@ import type { TrackQuery } from './matching';
  */
 
 export type CachedResult =
-  { kind: 'record'; record: LrclibRecord; manual: boolean } | { kind: 'none' };
+  { kind: 'record'; record: LrclibRecord; manual: boolean } | { kind: 'none'; matcher?: number };
+
+/**
+ * Bumped whenever title parsing or matching improves, so "no lyrics" results
+ * from an older matcher are retried instead of being trusted for an hour.
+ */
+export const MATCHER_VERSION = 2;
 
 interface Entry {
   v: CachedResult;
@@ -98,7 +104,8 @@ export class LyricsCache {
   get(key: string): CachedResult | null {
     const e = this.entries.get(key);
     if (!e) return null;
-    if (this.now() - e.t > this.ttl(e.v)) {
+    const staleMiss = e.v.kind === 'none' && (e.v.matcher ?? 1) < MATCHER_VERSION;
+    if (staleMiss || this.now() - e.t > this.ttl(e.v)) {
       this.entries.delete(key);
       this.persist();
       return null;

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { LyricsCache, STORAGE_KEY, browserStore, cacheKey } from './cache';
+import { LyricsCache, MATCHER_VERSION, STORAGE_KEY, browserStore, cacheKey } from './cache';
 import { contentFromRecord, type LyricsContent } from './content';
 import {
   LrclibError,
@@ -131,7 +131,7 @@ export function useLyrics(track: TrackQuery | null, deps: LyricsDeps = getDefaul
             setStatus({ phase: 'ambiguous', query: q, candidates: res.candidates });
             return;
           }
-          deps.cache.set(ck, { kind: 'none' });
+          deps.cache.set(ck, { kind: 'none', matcher: MATCHER_VERSION });
           setStatus({ phase: 'not-found', query: q });
         })
         .catch((e: unknown) => {

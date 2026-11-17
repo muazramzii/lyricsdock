@@ -30,7 +30,7 @@ Use `−` / `+` in the overlay footer (0.25 s steps), or `[` and `]` while the o
 
 ## Lyrics drift on a cover or live version
 
-The lyrics follow the original recording's timing. Click the target icon in the overlay footer (**Sync**), then click the line being sung right now. Click another line later in the song to match the tempo. The overlay shows **Custom sync** and remembers this for that video. **Reset** in the Sync panel goes back to the original timing.
+The lyrics follow the original recording's timing. Click the target icon in the overlay footer (**Sync**), then click the line being sung right now. Click another line at least 30 seconds later to match the tempo. Clicks closer together only shift the lyrics. The overlay shows **Custom sync** and remembers this for that video. **Reset** in the Sync panel goes back to the original timing.
 
 ## The lyrics are for the wrong version (live, remix…)
 

@@ -68,7 +68,7 @@ export function SyncPanel(p: Props) {
         {p.taps === 0
           ? 'Click the line being sung right now.'
           : p.taps === 1
-            ? 'Do it again later in the song to match the tempo.'
+            ? 'Click again at least 30 s later to match the tempo.'
             : 'Click again anytime the lyrics drift.'}
       </p>
       <div className="panel__results">

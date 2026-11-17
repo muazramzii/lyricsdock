@@ -106,8 +106,11 @@ export interface SyncTap {
 /** Tempo is only trusted within this range (±25 %), otherwise it's a mis-tap. */
 export const MIN_SCALE = 0.8;
 export const MAX_SCALE = 1.25;
-/** Two taps closer than this (in video time) can't give a reliable tempo. */
-export const MIN_TAP_SPAN = 8;
+/**
+ * Two taps closer than this (in video time) can't give a reliable tempo: a
+ * half-second reaction error over 10 s is already a 5 % tempo error.
+ */
+export const MIN_TAP_SPAN = 30;
 
 /**
  * Fit a mapping from the user's taps. The newest tap always lands exactly.

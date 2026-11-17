@@ -162,7 +162,14 @@ export function queryReadings(query: TrackQuery): { readings: TrackQuery[]; isCo
   const a = stripCover(query.artist);
   const isCover = t.isCover || a.isCover;
   const main: TrackQuery = { ...query, title: t.title, artist: a.title };
-  const readings = [main];
+  const readings: TrackQuery[] = [];
+  // "Song by Artist" (no dash), e.g. "Takkan Terganti by Marcell (cover by X)".
+  // Split on the last " by " so titles like "Stand by Me by Ben E. King" work.
+  const by = / by (?!.* by )(.+)$/i.exec(main.title);
+  if (by?.[1] && by.index > 0) {
+    readings.push({ ...main, title: main.title.slice(0, by.index).trim(), artist: by[1].trim() });
+  }
+  readings.push(main);
   if (main.artist && normalizeText(main.artist) !== normalizeText(main.title)) {
     readings.push({ ...main, title: main.artist, artist: main.title });
   }

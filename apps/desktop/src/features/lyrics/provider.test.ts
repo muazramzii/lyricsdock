@@ -1,5 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
-import { LyricsCache, MAX_ENTRIES, MISS_TTL_MS, cacheKey, type KeyValueStore } from './cache';
+import {
+  LyricsCache,
+  MATCHER_VERSION,
+  MAX_ENTRIES,
+  MISS_TTL_MS,
+  cacheKey,
+  type KeyValueStore,
+} from './cache';
 import { contentFromRecord } from './content';
 import {
   LrclibError,
@@ -251,6 +258,20 @@ describe('covers and "Song - Artist" titles', () => {
     expect(r).toMatchObject({ kind: 'match', candidate: { record: { artistName: 'ST12' } } });
   });
 
+  it('reads "Song by Artist" titles', () => {
+    const { readings, isCover } = queryReadings({
+      title: 'Takkan Terganti by Marcell (cover by Langit)',
+      artist: 'LangitJiwa',
+      duration: 243,
+    });
+    expect(isCover).toBe(true);
+    expect([readings[0]?.title, readings[0]?.artist]).toEqual(['Takkan Terganti', 'Marcell']);
+    expect(
+      queryReadings({ title: 'Stand by Me by Ben E. King', artist: '', duration: null })
+        .readings[0],
+    ).toMatchObject({ title: 'Stand by Me', artist: 'Ben E. King' });
+  });
+
   it('lets the user choose when a cover differs in length from the original', async () => {
     const r = await resolveLyrics(fakeClient({ search }), {
       title: 'ST12 (Afiq Adnan Cover)',
@@ -313,6 +334,14 @@ describe('LyricsCache', () => {
     expect(cache.get('hit')).not.toBeNull();
     for (let i = 0; i < MAX_ENTRIES + 10; i++) cache.set(`k${i}`, { kind: 'none' });
     expect(cache.size).toBe(MAX_ENTRIES);
+  });
+
+  it('retries misses recorded by an older matcher', () => {
+    const cache = new LyricsCache(memoryStore(), () => 0);
+    cache.set('old', { kind: 'none' });
+    cache.set('current', { kind: 'none', matcher: MATCHER_VERSION });
+    expect(cache.get('old')).toBeNull();
+    expect(cache.get('current')).toEqual({ kind: 'none', matcher: MATCHER_VERSION });
   });
 
   it('survives corrupt storage', () => {
