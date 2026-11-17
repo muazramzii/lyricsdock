@@ -150,6 +150,14 @@ describe('YouTube title parsing', () => {
     ['YOASOBI「夜に駆ける」Official Music Video', 'Ayase / YOASOBI', '夜に駆ける', 'YOASOBI'],
     ['Artist - Track | Official Video', 'x', 'Track', 'Artist'],
     ["Rock 'n' Roll Song", 'Band', "Rock 'n' Roll Song", 'Band'],
+    [
+      'Ellie Goulding - Love Me Like You Do (Lyrics) | One Direction, Shawn Mendes',
+      'Skyfall Rhythms',
+      'Love Me Like You Do',
+      'Ellie Goulding',
+    ],
+    ['Olivia Rodrigo - happier (Lyrics) // Sad Songs 2026', 'x', 'happier', 'Olivia Rodrigo'],
+    ['Imagination ｜ Shawn Mendes', 'Shawn Mendes', 'Imagination', 'Shawn Mendes'],
   ])('%s', (raw, channel, title, artist) => {
     expect(parseYouTubeTitle(raw, channel)).toEqual({ title, artist });
   });

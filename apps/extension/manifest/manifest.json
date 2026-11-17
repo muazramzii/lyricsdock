@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "LyricsDock",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Sends the song playing on YouTube or YouTube Music to the LyricsDock desktop overlay.",
   "minimum_chrome_version": "116",
   "permissions": ["storage", "scripting"],

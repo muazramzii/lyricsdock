@@ -1,5 +1,9 @@
 # Changelog
 
+## Extension 0.1.2 — 2026-11-17
+
+- Fix: titles from lyric channels with search tags after a bar, such as `Artist - Song (Lyrics) | Other Artist, …`, found no lyrics because the tags were searched as part of the song name. Text after `|`, `｜` or `//` is now ignored.
+
 ## Extension 0.1.1 — 2026-11-17
 
 - Fix: YouTube tabs that were already open when the extension was loaded were never detected (the popup said "Nothing playing on YouTube" until the tab was refreshed). The extension now injects into open YouTube tabs on install or update. This adds the `scripting` permission.

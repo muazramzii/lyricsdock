@@ -84,12 +84,18 @@ export interface TitleGuess {
   artist: string;
 }
 
+const TAG_SEPARATOR_RE = /\s+[|｜‖]\s+|\s*｜\s*|\s+\/\/\s+/;
+
 const SEPARATORS = [' - ', ' – ', ' — ', ' ~ '];
 
 export function parseYouTubeTitle(rawTitle: string, channel: string): TitleGuess {
   const cleanedChannel = cleanChannelName(channel);
   const isTopic = TOPIC_SUFFIX_RE.test(channel.trim());
-  const title = stripTitleNoise(rawTitle.replace(/\s+-\s+YouTube(\s+Music)?$/i, ''));
+  const full = stripTitleNoise(rawTitle.replace(/\s+-\s+YouTube(\s+Music)?$/i, ''));
+  // Lyric channels append search tags after a bar, e.g.
+  // "Artist - Song (Lyrics) | Other Artist, Another Artist". Only the first
+  // segment describes the video.
+  const title = tidy(full.split(TAG_SEPARATOR_RE)[0] ?? '') || full;
 
   // "Artist - Topic" channels upload the bare track name as the title.
   if (isTopic) return { title, artist: cleanedChannel };
