@@ -72,7 +72,64 @@ export function estimatePosition(anchor: PlaybackAnchor, nowMs: number): number 
   return Math.max(0, pos);
 }
 
-/** Position used for line lookup, including the user's sync offset. */
-export function lyricTime(anchor: PlaybackAnchor, nowMs: number, offsetMs: number): number {
-  return estimatePosition(anchor, nowMs) + offsetMs / 1000;
+/**
+ * Per-track mapping from video position to lyric time:
+ * `lyric = position × scale + shift`. Identity for the original recording;
+ * covers and live versions get their own shift and tempo from "Sync".
+ */
+export interface SyncMapping {
+  scale: number;
+  /** Seconds. */
+  shift: number;
+}
+
+export const IDENTITY_SYNC: SyncMapping = { scale: 1, shift: 0 };
+
+/** Position used for line lookup, including the track mapping and the global offset. */
+export function lyricTime(
+  anchor: PlaybackAnchor,
+  nowMs: number,
+  offsetMs: number,
+  mapping: SyncMapping = IDENTITY_SYNC,
+): number {
+  return estimatePosition(anchor, nowMs) * mapping.scale + mapping.shift + offsetMs / 1000;
+}
+
+/** "This lyric time is being sung at this video position." */
+export interface SyncTap {
+  /** Video position, seconds. */
+  position: number;
+  /** Lyric timestamp, seconds, with the global offset already removed. */
+  lyric: number;
+}
+
+/** Tempo is only trusted within this range (±25 %), otherwise it's a mis-tap. */
+export const MIN_SCALE = 0.8;
+export const MAX_SCALE = 1.25;
+/** Two taps closer than this (in video time) can't give a reliable tempo. */
+export const MIN_TAP_SPAN = 8;
+
+/**
+ * Fit a mapping from the user's taps. The newest tap always lands exactly.
+ * Tempo comes from the newest tap paired with the earlier tap furthest away
+ * from it; with only one usable tap the previous tempo is kept.
+ */
+export function fitMapping(
+  taps: readonly SyncTap[],
+  prev: SyncMapping = IDENTITY_SYNC,
+): SyncMapping {
+  const last = taps[taps.length - 1];
+  if (!last) return prev;
+  let scale = prev.scale;
+  let partner: SyncTap | null = null;
+  for (const t of taps.slice(0, -1)) {
+    const span = Math.abs(last.position - t.position);
+    if (span >= MIN_TAP_SPAN && (!partner || span > Math.abs(last.position - partner.position)))
+      partner = t;
+  }
+  if (partner) {
+    const fitted = (last.lyric - partner.lyric) / (last.position - partner.position);
+    if (fitted >= MIN_SCALE && fitted <= MAX_SCALE) scale = fitted;
+  }
+  return { scale, shift: last.lyric - last.position * scale };
 }

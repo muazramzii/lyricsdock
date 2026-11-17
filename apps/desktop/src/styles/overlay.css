@@ -430,6 +430,61 @@
   color: var(--ink-3);
 }
 
+/* ----------------------------------------------------------- sync panel */
+
+.panel__status {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.panel__reset {
+  height: 22px;
+  padding: 0 8px;
+  font-size: 11.5px;
+}
+
+.sync-line {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  width: 100%;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  text-align: left;
+  color: var(--ink-2);
+}
+
+.sync-line:hover {
+  background: var(--hover);
+  color: var(--ink-1);
+}
+
+.sync-line:active {
+  background: var(--press);
+}
+
+.sync-line--current {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--ink-1);
+}
+
+.sync-line__time {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-3);
+}
+
+.sync-line__text {
+  font-size: 13px;
+  font-weight: 500;
+}
+
 /* Very small windows: drop secondary chrome before the lyric line. */
 @media (max-height: 120px) {
   .line--prev,

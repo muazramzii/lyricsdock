@@ -15,6 +15,7 @@ const PATHS = {
   pointerOff: 'M5 3l14 7-6 2-2 6L5 3zM3 21L21 3',
   retry: 'M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7',
   back: 'M15 6l-6 6 6 6',
+  target: 'M12 3v3M12 18v3M3 12h3M18 12h3M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z',
   note: 'M9 18V5l11-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM20 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z',
 } as const;
 

@@ -13,12 +13,16 @@ import { useBridge } from '../connection/useBridge';
 import { LyricsView } from '../lyrics/LyricsView';
 import type { LyricsContent } from '../lyrics/content';
 import type { TrackQuery } from '../lyrics/matching';
-import type { PlaybackAnchor } from '../lyrics/sync';
+import { cacheKey } from '../lyrics/cache';
+import type { LyricLine } from '../lyrics/lrc';
+import { estimatePosition, type PlaybackAnchor } from '../lyrics/sync';
+import { syncKey, useTrackSync } from '../lyrics/syncStore';
 import { ERROR_MESSAGES, useLyrics, type LyricsStatus } from '../lyrics/useLyrics';
 import { useLyricIndex } from '../lyrics/useLyricIndex';
 import { prefersReducedMotion, useSettings } from '../settings/useSettings';
 import { DEMO_CONTENT, DEMO_TRACK, useDemoAnchor } from './demo';
 import { SearchPanel } from './SearchPanel';
+import { SyncPanel, describeMapping } from './SyncPanel';
 
 const OFFSET_STEP_MS = 250;
 
@@ -88,7 +92,8 @@ export function Overlay() {
   const { settings, update } = useSettings();
   const bridge = useBridge();
   const [demo, setDemo] = useState(false);
-  const [panelOpen, setPanelOpen] = useState(false);
+  const [panel, setPanel] = useState<'search' | 'sync' | null>(null);
+  const panelOpen = panel !== null;
   const [frozen, setFrozen] = useState(false);
   const [clickThrough, setClickThrough] = useState(false);
 
@@ -118,7 +123,21 @@ export function Overlay() {
       : null;
   const anchor: PlaybackAnchor | null = demoActive ? demoAnchor : bridge.anchor;
   const syncedLines = content?.kind === 'synced' ? content.lines : null;
-  const index = useLyricIndex(syncedLines, anchor, demoActive ? 0 : settings.syncOffsetMs, frozen);
+
+  // Per-video calibration (covers, live takes), keyed by video + lyrics record.
+  const trackId = bridge.playback?.videoId ?? (query ? cacheKey(query) : null);
+  const trackSync = useTrackSync(
+    !demoActive && syncedLines && trackId && content
+      ? syncKey(trackId, content.record?.id ?? null)
+      : null,
+  );
+  const index = useLyricIndex(
+    syncedLines,
+    anchor,
+    demoActive ? 0 : settings.syncOffsetMs,
+    frozen,
+    trackSync.mapping,
+  );
 
   useEffect(() => {
     void api.getClickThrough().then(setClickThrough);
@@ -130,14 +149,31 @@ export function Overlay() {
   // A new track unfreezes the display.
   useEffect(() => setFrozen(false), [query]);
 
-  const openPanel = useCallback(() => {
-    setPanelOpen(true);
+  const openPanel = useCallback((which: 'search' | 'sync' = 'search') => {
+    setPanel(which);
     void api.setOverlayExpanded(true);
   }, []);
   const closePanel = useCallback(() => {
-    setPanelOpen(false);
+    setPanel(null);
     void api.setOverlayExpanded(false);
   }, []);
+
+  // The sync panel only makes sense while synced lyrics are on screen.
+  useEffect(() => {
+    if (panel === 'sync' && !syncedLines) closePanel();
+  }, [panel, syncedLines, closePanel]);
+
+  const { tap } = trackSync;
+  const pickLine = useCallback(
+    (line: LyricLine) => {
+      if (!anchor) return;
+      tap({
+        position: estimatePosition(anchor, Date.now()),
+        lyric: line.time - settings.syncOffsetMs / 1000,
+      });
+    },
+    [anchor, tap, settings.syncOffsetMs],
+  );
 
   const nudge = useCallback(
     (delta: number) => {
@@ -210,7 +246,7 @@ export function Overlay() {
           <button
             type="button"
             className="icon-btn"
-            onClick={panelOpen ? closePanel : openPanel}
+            onClick={panelOpen ? closePanel : () => openPanel('search')}
             aria-label="Find lyrics"
             title="Find lyrics / choose match"
             aria-expanded={panelOpen}
@@ -230,7 +266,18 @@ export function Overlay() {
         </div>
       </header>
 
-      {panelOpen ? (
+      {panel === 'sync' && syncedLines ? (
+        <SyncPanel
+          lines={syncedLines}
+          index={index}
+          mapping={trackSync.mapping}
+          taps={trackSync.taps}
+          reducedMotion={reduced}
+          onPick={pickLine}
+          onReset={trackSync.reset}
+          onClose={closePanel}
+        />
+      ) : panel === 'search' ? (
         <SearchPanel
           key={query ? `${query.title}|${query.artist}` : 'none'}
           initialTitle={query?.title ?? ''}
@@ -260,7 +307,7 @@ export function Overlay() {
               status={lyrics.status}
               bridgeStatus={bridge.status}
               onRetry={lyrics.retry}
-              onSearch={openPanel}
+              onSearch={() => openPanel('search')}
               onDemo={() => setDemo(true)}
             />
           )}
@@ -275,6 +322,11 @@ export function Overlay() {
             !demoActive &&
             lyrics.status.phase === 'ready' &&
             lyrics.status.manual && <span className="badge">Manual match</span>}
+          {content?.kind === 'synced' && !demoActive && trackSync.taps > 0 && (
+            <span className="badge" title={describeMapping(trackSync.mapping)}>
+              Custom sync
+            </span>
+          )}
           {clickThrough && <span className="badge badge--warn">Click-through</span>}
           {anchor && !anchor.playing && content?.kind === 'synced' && (
             <span className="badge">Paused</span>
@@ -311,6 +363,18 @@ export function Overlay() {
                 <Icon name="plus" size={13} />
               </button>
             </div>
+          )}
+          {content?.kind === 'synced' && !demoActive && (
+            <button
+              type="button"
+              className="icon-btn"
+              onClick={panel === 'sync' ? closePanel : () => openPanel('sync')}
+              aria-pressed={panel === 'sync'}
+              aria-label="Sync lyrics to this video"
+              title="Sync: click the line being sung"
+            >
+              <Icon name="target" />
+            </button>
           )}
           {demoActive && (
             <button type="button" className="btn btn--ghost" onClick={() => setDemo(false)}>

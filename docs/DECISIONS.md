@@ -93,3 +93,11 @@ Creating a WebView2 window from a synchronous Tauri command deadlocks the Window
 ## D14. Git attribution
 
 Following the blueprint, commits use the user's existing Git identity and carry no AI co-author trailer.
+
+## D15. Per-video sync calibration ("Sync")
+
+LRCLIB timestamps belong to one recording. A cover, live take or re-upload with a different intro or tempo drifts, and a fixed offset can't fix a tempo difference. The overlay therefore maps video time to lyric time per video as `lyric = position × scale + shift`.
+
+The **Sync** panel (target icon in the footer) lists every sung line. Clicking the line being sung right now records a tap: the current video position paired with that line's timestamp. The newest tap always lands exactly. Tempo comes from pairing it with the earlier tap furthest away from it, at least 8 s apart. The fitted tempo is used only when it is within ±25 %; anything else is treated as a mis-click and only the shift changes.
+
+Calibration is stored in `localStorage` (`lyricsdock.sync.v1`, at most 200 entries, oldest evicted). It is keyed by video ID plus LRCLIB record ID, so another cover of the same song, or picking different lyrics, starts fresh. The global offset (`−`/`+`) still applies on top; it is meant for constant latency, not per-song timing.
