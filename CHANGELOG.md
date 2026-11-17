@@ -1,5 +1,11 @@
 # Changelog
 
+## Desktop (unreleased) — 2026-11-17
+
+- Fix: "Song - Artist" titles (common for Malay and Indonesian uploads) found no lyrics because only the "Artist - Song" reading was searched. Both readings are now tried.
+- Covers such as `Song - Artist (X Cover)` now find the original song's lyrics. If the cover's length differs from the original by more than 5 s, the overlay asks you to choose instead of showing lyrics that would drift.
+- The "Choose match" list no longer repeats the same recording several times.
+
 ## Extension 0.1.2 — 2026-11-17
 
 - Fix: titles from lyric channels with search tags after a bar, such as `Artist - Song (Lyrics) | Other Artist, …`, found no lyrics because the tags were searched as part of the song name. Text after `|`, `｜` or `//` is now ignored.

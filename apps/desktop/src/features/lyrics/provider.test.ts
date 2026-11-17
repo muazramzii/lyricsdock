@@ -10,9 +10,11 @@ import {
 } from './lrclib';
 import {
   artistSimilarity,
+  queryReadings,
   rankCandidates,
   resolveLyrics,
   scoreCandidate,
+  stripCover,
   titleSimilarity,
 } from './matching';
 
@@ -208,6 +210,65 @@ describe('resolveLyrics', () => {
     await expect(resolveLyrics(client, { ...q, duration: null })).rejects.toMatchObject({
       kind: 'offline',
     });
+  });
+});
+
+describe('covers and "Song - Artist" titles', () => {
+  it('strips cover credits', () => {
+    expect(stripCover('ST12 (Afiq Adnan Cover)')).toEqual({ title: 'ST12', isCover: true });
+    expect(stripCover('Perfect [Cover by Someone]')).toEqual({ title: 'Perfect', isCover: true });
+    expect(stripCover('Perfect cover by Someone')).toEqual({ title: 'Perfect', isCover: true });
+    expect(stripCover('Cover Me Up')).toEqual({ title: 'Cover Me Up', isCover: false });
+  });
+
+  it('tries the swapped reading', () => {
+    const { readings, isCover } = queryReadings({
+      title: 'ST12 (Afiq Adnan Cover)',
+      artist: 'Cinta Tak Harus Memiliki',
+      duration: 253,
+    });
+    expect(isCover).toBe(true);
+    expect(readings.map((r) => [r.title, r.artist])).toEqual([
+      ['ST12', 'Cinta Tak Harus Memiliki'],
+      ['Cinta Tak Harus Memiliki', 'ST12'],
+    ]);
+  });
+
+  const original = (id: number, duration: number) =>
+    rec({ id, trackName: 'Cinta Tak Harus Memiliki', artistName: 'ST12', duration });
+  const search = vi.fn(async (p: { trackName?: string; artistName?: string; q?: string }) =>
+    'trackName' in p && p.trackName === 'Cinta Tak Harus Memiliki'
+      ? [original(1, 272), original(2, 272), original(3, 277)]
+      : [],
+  );
+
+  it('finds "Song - Artist" uploads', async () => {
+    const r = await resolveLyrics(fakeClient({ search }), {
+      title: 'ST12',
+      artist: 'Cinta Tak Harus Memiliki',
+      duration: 272,
+    });
+    expect(r).toMatchObject({ kind: 'match', candidate: { record: { artistName: 'ST12' } } });
+  });
+
+  it('lets the user choose when a cover differs in length from the original', async () => {
+    const r = await resolveLyrics(fakeClient({ search }), {
+      title: 'ST12 (Afiq Adnan Cover)',
+      artist: 'Cinta Tak Harus Memiliki',
+      duration: 253,
+    });
+    expect(r.kind).toBe('ambiguous');
+    // Duplicate uploads of one recording are offered once.
+    if (r.kind === 'ambiguous') expect(r.candidates.map((c) => c.record.id)).toEqual([1, 3]);
+  });
+
+  it('accepts the original for a cover of the same length', async () => {
+    const r = await resolveLyrics(fakeClient({ search }), {
+      title: 'ST12 (Afiq Adnan Cover)',
+      artist: 'Cinta Tak Harus Memiliki',
+      duration: 273,
+    });
+    expect(r.kind).toBe('match');
   });
 });
 

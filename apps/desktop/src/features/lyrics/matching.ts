@@ -141,10 +141,77 @@ export function rankCandidates(query: TrackQuery, records: LrclibRecord[]): Scor
     );
 }
 
-function decide(ranked: ScoredCandidate[]): Resolution | null {
+const COVER_BRACKET_RE = /\s*[([【]([^)\]】]*\bcover\b[^)\]】]*)[)\]】]\s*/i;
+const COVER_BY_RE = /\s+[-–—|]?\s*\bcover(?:ed)?\s+by\s+.+$/i;
+
+/** Remove "(X Cover)", "[Cover by X]" or a trailing "cover by X" from a title. */
+export function stripCover(title: string): { title: string; isCover: boolean } {
+  const out = title.replace(COVER_BRACKET_RE, ' ').replace(COVER_BY_RE, '').trim();
+  return out && out !== title.trim()
+    ? { title: out.replace(/\s+/g, ' '), isCover: true }
+    : { title, isCover: false };
+}
+
+/**
+ * Ways to read the query. YouTube uploads use both "Artist - Song" and
+ * "Song - Artist", so when an artist was guessed the swapped reading is tried
+ * too. Cover credits are removed so the original recording can be found.
+ */
+export function queryReadings(query: TrackQuery): { readings: TrackQuery[]; isCover: boolean } {
+  const t = stripCover(query.title);
+  const a = stripCover(query.artist);
+  const isCover = t.isCover || a.isCover;
+  const main: TrackQuery = { ...query, title: t.title, artist: a.title };
+  const readings = [main];
+  if (main.artist && normalizeText(main.artist) !== normalizeText(main.title)) {
+    readings.push({ ...main, title: main.artist, artist: main.title });
+  }
+  return { readings, isCover };
+}
+
+/** Rank against every reading; each record keeps its best score. */
+function rankReadings(readings: TrackQuery[], records: LrclibRecord[]): ScoredCandidate[] {
+  const best = new Map<number, ScoredCandidate>();
+  for (const q of readings) {
+    for (const c of rankCandidates(q, records)) {
+      const prev = best.get(c.record.id);
+      if (!prev || c.score > prev.score) best.set(c.record.id, c);
+    }
+  }
+  return [...best.values()].sort(
+    (a, b) =>
+      b.score - a.score ||
+      Number(!!b.record.syncedLyrics) - Number(!!a.record.syncedLyrics) ||
+      (a.durationDiff ?? 999) - (b.durationDiff ?? 999) ||
+      a.record.id - b.record.id,
+  );
+}
+
+/** LRCLIB often holds several uploads of one recording; offer each once. */
+function distinct(ranked: ScoredCandidate[]): ScoredCandidate[] {
+  const seen = new Set<string>();
+  return ranked.filter((c) => {
+    const r = c.record;
+    const key = [
+      normalizeText(r.artistName),
+      normalizeText(r.trackName),
+      Math.round(r.duration ?? -1),
+      !!r.syncedLyrics,
+    ].join('|');
+    return seen.has(key) ? false : (seen.add(key), true);
+  });
+}
+
+function decide(ranked: ScoredCandidate[], isCover = false, minTitle = 0.8): Resolution | null {
   const best = ranked[0];
   if (!best) return null;
-  if (best.score >= ACCEPT_SCORE && best.titleScore >= 0.8) {
+  // A cover usually has its own tempo and length. The original's timing is
+  // only trusted when the lengths agree; otherwise the user chooses.
+  const coverMismatch =
+    isCover &&
+    !versionTags(best.record.trackName).has('cover') &&
+    (best.durationDiff === null || best.durationDiff > 5);
+  if (!coverMismatch && best.score >= ACCEPT_SCORE && best.titleScore >= minTitle) {
     return { kind: 'match', candidate: best, alternatives: ranked.slice(1, 6) };
   }
   return null;
@@ -153,7 +220,8 @@ function decide(ranked: ScoredCandidate[]): Resolution | null {
 /**
  * Look up lyrics for a track.
  * 1. Exact `/api/get` with duration (LRCLIB matches duration within ±2 s).
- * 2. Field search by title + artist, then by title alone.
+ * 2. Field search by title + artist, then by title alone, for both the
+ *    "Artist - Song" and "Song - Artist" readings.
  * 3. Free-text search with the raw page title.
  * Low-confidence results are returned as `ambiguous` for the user to choose.
  */
@@ -163,14 +231,16 @@ export async function resolveLyrics(
   signal?: AbortSignal,
 ): Promise<Resolution> {
   const pool: LrclibRecord[] = [];
+  const { readings, isCover } = queryReadings(query);
+  const main = readings[0] ?? query;
 
-  if (query.artist && query.duration != null) {
+  if (main.artist && main.duration != null && !isCover) {
     const exact = await client.get(
-      { trackName: query.title, artistName: query.artist, duration: query.duration },
+      { trackName: main.title, artistName: main.artist, duration: main.duration },
       signal,
     );
     if (exact) {
-      const scored = scoreCandidate(query, exact);
+      const scored = scoreCandidate(main, exact);
       if (scored.titleScore >= 0.8 && scored.artistScore >= 0.7) {
         return { kind: 'match', candidate: scored, alternatives: [] };
       }
@@ -179,10 +249,12 @@ export async function resolveLyrics(
   }
 
   const attempts: Array<Parameters<LrclibClient['search']>[0]> = [];
-  if (query.artist) attempts.push({ trackName: query.title, artistName: query.artist });
-  attempts.push({ trackName: query.title });
+  for (const r of readings) {
+    if (r.artist) attempts.push({ trackName: r.title, artistName: r.artist });
+  }
+  for (const r of readings) attempts.push({ trackName: r.title });
   if (query.rawTitle && normalizeText(query.rawTitle) !== normalizeText(query.title)) {
-    attempts.push({ q: stripTitleNoise(query.rawTitle) });
+    attempts.push({ q: stripCover(stripTitleNoise(query.rawTitle)).title });
   }
 
   let lastError: unknown = null;
@@ -197,11 +269,16 @@ export async function resolveLyrics(
       }
       throw e;
     }
-    const decision = decide(rankCandidates(query, pool));
-    if (decision) return decision;
+    // Stop early only on a near-exact title; a looser match may be beaten
+    // by a later attempt (e.g. the other "Song - Artist" reading).
+    const early = decide(rankReadings(readings, pool), isCover, 0.95);
+    if (early) return early;
   }
 
-  const ranked = rankCandidates(query, pool).filter((c) => c.score >= OFFER_SCORE);
+  const final = rankReadings(readings, pool);
+  const decision = decide(final, isCover);
+  if (decision) return decision;
+  const ranked = distinct(final.filter((c) => c.score >= OFFER_SCORE));
   if (ranked.length > 0) return { kind: 'ambiguous', candidates: ranked.slice(0, 8) };
   if (lastError && pool.length === 0) throw lastError;
   return { kind: 'none' };

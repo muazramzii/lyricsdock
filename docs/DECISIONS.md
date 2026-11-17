@@ -60,7 +60,9 @@ Click-through uses `set_ignore_cursor_events(true)`. Because the overlay can the
 1. `GET /api/get` with title, artist and rounded duration. LRCLIB matches duration within ±2 s. This is used only when both artist and duration are known. The result is accepted directly only if title and artist scores are high.
 2. `GET /api/search` by title + artist, then by title alone, then free text with the raw YouTube title (noise stripped).
 3. Candidates are ranked deterministically: score (title 50 %, artist 30 %, duration 20 %, with penalties for version mismatches such as live/remix/acoustic and for >30 s length gaps), then synced-first, then smaller duration gap, then id.
-4. Results are accepted automatically only when the score is ≥ 0.72 and the title similarity is ≥ 0.8. Otherwise the overlay shows **"Not sure which song this is → Choose match"** instead of guessing.
+4. Results are accepted automatically only when the score is ≥ 0.72 and the title similarity is ≥ 0.8. Otherwise the overlay shows **"Not sure which song this is → Choose match"** instead of guessing. Searching stops early only on a near-exact title (≥ 0.95), so a later, better attempt can still win.
+5. Both readings of `A - B` are tried. Uploads use "Artist - Song" and "Song - Artist" about equally often, especially for Malay and Indonesian music. Each candidate keeps its best score across the two readings.
+6. Covers (`(X Cover)`, `[Cover by X]`, `cover by X`) are searched as the original song. LRCLIB rarely has the cover itself. The original is accepted automatically only when its length is within 5 s of the video. Otherwise the user chooses, because a cover's tempo usually differs and the original's timing would drift. Duplicate uploads of one recording are offered once in the chooser.
 
 Title cleanup removes only promotional noise ("Official Video", "Lyrics", "4K", "Remastered 2011"). It keeps "(Live)", "(Acoustic)", "(Remix)" and "(Taylor's Version)", because those change the words or timing. Normalization keeps all Unicode letters, so CJK, Hangul and accented titles still compare correctly.
 
