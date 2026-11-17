@@ -50,6 +50,12 @@ Click-through mode is on. Press **Ctrl+Alt+K** (or your configured shortcut), or
 
 Another app may already use it. In Settings → Behaviour, type another combination such as `CommandOrControl+Shift+F9` and press Enter. An error appears if it cannot be registered, and the old one stays active.
 
+## Popup says "Connected" but "Nothing playing on YouTube"
+
+- An ad is playing. Ads are ignored on purpose; the song appears when the video starts.
+- The extension was loaded with a version older than 0.1.1 while the tab was already open. Refresh the YouTube tab once. Newer versions inject into open tabs automatically.
+- After reloading the extension in `brave://extensions`, press play or pause once so the tab reports again.
+
 ## Nothing happens on YouTube's home page
 
 That's intentional. Only watch pages (`/watch`, `/shorts/`) and YouTube Music are followed, so muted previews on the home page are ignored. Ads are ignored too.

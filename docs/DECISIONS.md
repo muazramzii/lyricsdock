@@ -82,7 +82,7 @@ The background worker keeps one entry per tab. The rule is: a playing tab beats 
 
 ## D12. Extension permissions
 
-Only `storage` (the pairing key) plus host access to `http://127.0.0.1/*`. Content scripts run only on `www.youtube.com`, `m.youtube.com` and `music.youtube.com`. There is no `tabs`, `history`, `webRequest` or `<all_urls>`. On regular YouTube, only `/watch` and `/shorts/` pages are reported, so home-page previews are ignored. Ads (`.ad-showing`) are not reported.
+`storage` (the pairing key) and `scripting`, plus host access to `http://127.0.0.1/*` and the three YouTube hosts. Content scripts run only on `www.youtube.com`, `m.youtube.com` and `music.youtube.com`. `scripting` is used once, on install or update, to inject the content script into YouTube tabs that were already open; Chromium only adds manifest content scripts to pages loaded afterwards. Brave shows the same "read and change your data on youtube.com" warning either way. There is no `tabs`, `history`, `webRequest` or `<all_urls>`. On regular YouTube, only `/watch` and `/shorts/` pages are reported, so home-page previews are ignored. Ads (`.ad-showing`) are not reported.
 
 ## D13. Settings window created off the main thread
 

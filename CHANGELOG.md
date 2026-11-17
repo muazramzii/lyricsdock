@@ -1,5 +1,9 @@
 # Changelog
 
+## Extension 0.1.1 — 2026-11-17
+
+- Fix: YouTube tabs that were already open when the extension was loaded were never detected (the popup said "Nothing playing on YouTube" until the tab was refreshed). The extension now injects into open YouTube tabs on install or update. This adds the `scripting` permission.
+
 ## 0.1.0 — 2026-11-17
 
 First MVP.

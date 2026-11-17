@@ -44,6 +44,7 @@ function send(state: PlaybackState | null) {
 }
 
 function update(force = false) {
+  if (!alive) return;
   const now = Date.now();
   const next = snapshot(document, location, navigator, now);
   if (force || shouldSendNow(last, next, now - lastSentAt)) {
@@ -105,9 +106,32 @@ function shutdown() {
     for (const e of MEDIA_EVENTS) observedVideo.removeEventListener(e, onMediaEvent);
 }
 
-document.addEventListener('yt-navigate-finish', () => update(true));
-window.addEventListener('popstate', () => update(true));
-window.addEventListener('pagehide', () => send(null));
+const onNavigate = () => update(true);
+const onPageHide = () => send(null);
+
+function shutdownListeners() {
+  document.removeEventListener('yt-navigate-finish', onNavigate);
+  window.removeEventListener('popstate', onNavigate);
+  window.removeEventListener('pagehide', onPageHide);
+}
+
+// The background injects this script into tabs that were open at install
+// time, and a reloaded extension can share the isolated world with its old,
+// orphaned copy. Whichever copy runs last takes over.
+const INSTANCE_KEY = '__lyricsdockContent';
+type Instance = { stop: () => void };
+const slot = window as unknown as Record<string, Instance | undefined>;
+slot[INSTANCE_KEY]?.stop();
+slot[INSTANCE_KEY] = {
+  stop: () => {
+    shutdown();
+    shutdownListeners();
+  },
+};
+
+document.addEventListener('yt-navigate-finish', onNavigate);
+window.addEventListener('popstate', onNavigate);
+window.addEventListener('pagehide', onPageHide);
 
 observeTitle();
 update(true);

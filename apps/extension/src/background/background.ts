@@ -15,6 +15,12 @@ const ALLOWED_HOSTS = new Set([
   'music.youtube.com',
 ]);
 
+const CONTENT_MATCHES = [
+  'https://www.youtube.com/*',
+  'https://music.youtube.com/*',
+  'https://m.youtube.com/*',
+];
+
 const registry = new TabRegistry();
 const client = new BridgeClient({
   fetch: (url, init) => fetch(url, init),
@@ -123,4 +129,24 @@ chrome.runtime.onMessage.addListener((raw: unknown, sender, sendResponse) => {
 chrome.tabs.onRemoved.addListener((tabId) => {
   registry.remove(tabId);
   void push();
+});
+
+/**
+ * Manifest content scripts only reach tabs loaded after install. Inject into
+ * YouTube tabs that were already open so they work without a refresh.
+ */
+chrome.runtime.onInstalled.addListener(() => {
+  void chrome.tabs.query({ url: CONTENT_MATCHES }).then((tabs) =>
+    Promise.all(
+      tabs.map((t) =>
+        t.id === undefined || t.discarded
+          ? undefined
+          : chrome.scripting
+              .executeScript({ target: { tabId: t.id }, files: ['content.js'] })
+              .catch(() => {
+                /* tab closed, still loading, or an error page */
+              }),
+      ),
+    ),
+  );
 });
