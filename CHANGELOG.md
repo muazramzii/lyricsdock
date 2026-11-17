@@ -5,9 +5,15 @@
 - Fix: "Song - Artist" titles (common for Malay and Indonesian uploads) found no lyrics because only the "Artist - Song" reading was searched. Both readings are now tried.
 - Covers such as `Song - Artist (X Cover)` now find the original song's lyrics. If the cover's length differs from the original by more than 5 s, the overlay asks you to choose instead of showing lyrics that would drift.
 - The "Choose match" list no longer repeats the same recording several times.
+- Fix: "Song (Lirik) - Artist" titles found nothing, and manual search used the fields exactly as typed. Manual search now cleans the fields and also tries them swapped, the title alone, and free text.
+- A song with the same title by a different artist is no longer accepted automatically.
 - Fix: "Song by Artist (cover by X)" titles found nothing; the "by" form is now understood.
 - "No lyrics" results remembered by an older version are retried instead of being trusted for an hour.
 - New **Sync** panel (target icon in the footer): click the line being sung right now to line the lyrics up with this video, and click again at least 30 s later to match its tempo. Made for covers and live versions whose timing differs from the original. Saved per video; **Reset** restores the original timing.
+
+## Extension 0.1.3 — 2026-11-18
+
+- "(Lirik)", "(Video Klip)", "Terjemahan", "Letra", "Paroles" and similar non-English tags are removed from titles like "(Lyrics)" already was.
 
 ## Extension 0.1.2 — 2026-11-17
 

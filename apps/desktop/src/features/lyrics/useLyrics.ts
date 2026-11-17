@@ -8,7 +8,7 @@ import {
   type LrclibErrorKind,
   type LrclibRecord,
 } from './lrclib';
-import { rankCandidates, resolveLyrics, type ScoredCandidate, type TrackQuery } from './matching';
+import { manualSearch, resolveLyrics, type ScoredCandidate, type TrackQuery } from './matching';
 
 export type LyricsStatus =
   | { phase: 'idle' }
@@ -169,13 +169,8 @@ export function useLyrics(track: TrackQuery | null, deps: LyricsDeps = getDefaul
       if (!t) return;
       setManual({ busy: true, results: null, error: null });
       try {
-        const records = await deps.client.search(
-          artist.trim() ? { trackName: t, artistName: artist.trim() } : { q: t },
-        );
-        const base = trackRef.current;
-        const ranked = rankCandidates(
-          { title: t, artist: artist.trim(), duration: base?.duration ?? null },
-          records,
+        const ranked = (
+          await manualSearch(deps.client, t, artist, trackRef.current?.duration ?? null)
         ).filter((c) => contentFromRecord(c.record) !== null);
         setManual({ busy: false, results: ranked.slice(0, 12), error: null });
       } catch (e) {

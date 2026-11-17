@@ -158,6 +158,8 @@ describe('YouTube title parsing', () => {
     ],
     ['Olivia Rodrigo - happier (Lyrics) // Sad Songs 2026', 'x', 'happier', 'Olivia Rodrigo'],
     ['Imagination ｜ Shawn Mendes', 'Shawn Mendes', 'Imagination', 'Shawn Mendes'],
+    ['Hindia - Evaluasi (Lirik)', 'x', 'Evaluasi', 'Hindia'],
+    ['Tulus - Hati-Hati di Jalan (Video Klip)', 'x', 'Hati-Hati di Jalan', 'Tulus'],
   ])('%s', (raw, channel, title, artist) => {
     expect(parseYouTubeTitle(raw, channel)).toEqual({ title, artist });
   });

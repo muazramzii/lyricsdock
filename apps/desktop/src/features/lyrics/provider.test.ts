@@ -17,6 +17,7 @@ import {
 } from './lrclib';
 import {
   artistSimilarity,
+  manualSearch,
   queryReadings,
   rankCandidates,
   resolveLyrics,
@@ -281,6 +282,42 @@ describe('covers and "Song - Artist" titles', () => {
     expect(r.kind).toBe('ambiguous');
     // Duplicate uploads of one recording are offered once.
     if (r.kind === 'ambiguous') expect(r.candidates.map((c) => c.record.id)).toEqual([1, 3]);
+  });
+
+  it('never auto-accepts the same title by an unrelated artist', async () => {
+    const other = vi.fn(async () => [
+      rec({ id: 5, trackName: 'Not You', artistName: 'Matt Terry', duration: 190 }),
+    ]);
+    const r = await resolveLyrics(fakeClient({ search: other }), {
+      title: 'Not You',
+      artist: 'Emma Steinbakken, Alan Walker',
+      duration: 190,
+    });
+    expect(r.kind).toBe('ambiguous');
+  });
+
+  it('cleans "(Lirik)" and searches swapped fields in manual search', async () => {
+    const search = vi.fn(async (p: { trackName?: string; artistName?: string; q?: string }) =>
+      'trackName' in p &&
+      p.trackName === 'Not You' &&
+      p.artistName === 'Emma Steinbakken, Alan Walker'
+        ? [
+            rec({
+              id: 8,
+              trackName: 'Not You',
+              artistName: 'Alan Walker, Emma Steinbakken',
+              duration: 154,
+            }),
+          ]
+        : [],
+    );
+    const r = await manualSearch(
+      fakeClient({ search }),
+      'Emma Steinbakken, Alan Walker',
+      'Not You (Lirik)',
+      154,
+    );
+    expect(r.map((c) => c.record.id)).toEqual([8]);
   });
 
   it('accepts the original for a cover of the same length', async () => {

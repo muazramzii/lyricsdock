@@ -161,7 +161,12 @@ export function queryReadings(query: TrackQuery): { readings: TrackQuery[]; isCo
   const t = stripCover(query.title);
   const a = stripCover(query.artist);
   const isCover = t.isCover || a.isCover;
-  const main: TrackQuery = { ...query, title: t.title, artist: a.title };
+  const main: TrackQuery = {
+    ...query,
+    // The artist field can hold the song half of a "Song (Lirik) - Artist" title.
+    title: stripTitleNoise(t.title) || t.title,
+    artist: stripTitleNoise(a.title),
+  };
   const readings: TrackQuery[] = [];
   // "Song by Artist" (no dash), e.g. "Takkan Terganti by Marcell (cover by X)".
   // Split on the last " by " so titles like "Stand by Me by Ben E. King" work.
@@ -194,6 +199,36 @@ function rankReadings(readings: TrackQuery[], records: LrclibRecord[]): ScoredCa
   );
 }
 
+/**
+ * Manual search from the panel. People type title and artist in either box,
+ * with or without noise like "(Lirik)", so try the fields as given, swapped,
+ * the title alone, then both as free text, stopping at the first results.
+ */
+export async function manualSearch(
+  client: LrclibClient,
+  title: string,
+  artist: string,
+  duration: number | null,
+  signal?: AbortSignal,
+): Promise<ScoredCandidate[]> {
+  const { readings } = queryReadings({ title: title.trim(), artist: artist.trim(), duration });
+  const main = readings.find((r) => r.title) ?? { title: title.trim(), artist: '', duration };
+  const attempts: Array<Parameters<LrclibClient['search']>[0]> = [];
+  for (const r of readings) {
+    if (r.title && r.artist) attempts.push({ trackName: r.title, artistName: r.artist });
+  }
+  attempts.push({ trackName: main.title });
+  if (main.artist) attempts.push({ trackName: main.artist });
+  attempts.push({ q: [main.title, main.artist].filter(Boolean).join(' ') });
+
+  const pool: LrclibRecord[] = [];
+  for (const params of attempts) {
+    pool.push(...(await client.search(params, signal)));
+    if (pool.length > 0) break;
+  }
+  return distinct(rankReadings(readings, pool));
+}
+
 /** LRCLIB often holds several uploads of one recording; offer each once. */
 function distinct(ranked: ScoredCandidate[]): ScoredCandidate[] {
   const seen = new Set<string>();
@@ -218,7 +253,10 @@ function decide(ranked: ScoredCandidate[], isCover = false, minTitle = 0.8): Res
     isCover &&
     !versionTags(best.record.trackName).has('cover') &&
     (best.durationDiff === null || best.durationDiff > 5);
-  if (!coverMismatch && best.score >= ACCEPT_SCORE && best.titleScore >= minTitle) {
+  // Same title by a different artist (e.g. two songs called "Not You") is
+  // never taken automatically. Unknown artists score a neutral 0.5.
+  const artistOk = best.artistScore >= 0.5;
+  if (!coverMismatch && artistOk && best.score >= ACCEPT_SCORE && best.titleScore >= minTitle) {
     return { kind: 'match', candidate: best, alternatives: ranked.slice(1, 6) };
   }
   return null;

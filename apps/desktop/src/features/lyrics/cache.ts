@@ -15,7 +15,7 @@ export type CachedResult =
  * Bumped whenever title parsing or matching improves, so "no lyrics" results
  * from an older matcher are retried instead of being trusted for an hour.
  */
-export const MATCHER_VERSION = 2;
+export const MATCHER_VERSION = 3;
 
 interface Entry {
   v: CachedResult;
