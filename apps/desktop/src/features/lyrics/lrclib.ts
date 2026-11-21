@@ -11,7 +11,7 @@
  */
 
 export const LRCLIB_BASE = 'https://lrclib.net';
-export const CLIENT_ID = 'LyricsDock v0.1.0';
+export const CLIENT_ID = 'LyricsDock v0.2.0';
 const TIMEOUT_MS = 10_000;
 
 export interface LrclibRecord {

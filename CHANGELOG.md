@@ -1,6 +1,6 @@
 # Changelog
 
-## Desktop (unreleased) — 2026-11-17
+## Desktop 0.2.0 — 2026-11-22
 
 - Fix: "Song - Artist" titles (common for Malay and Indonesian uploads) found no lyrics because only the "Artist - Song" reading was searched. Both readings are now tried.
 - Covers such as `Song - Artist (X Cover)` now find the original song's lyrics. If the cover's length differs from the original by more than 5 s, the overlay asks you to choose instead of showing lyrics that would drift.

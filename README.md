@@ -29,7 +29,7 @@ The extension reads the `<video>` element (position, duration, paused, rate) and
 
 ## Install (Windows 10/11 x64)
 
-1. Build the installer with `npm run build:desktop` and run `apps/desktop/src-tauri/target/release/bundle/nsis/LyricsDock_0.1.0_x64-setup.exe` (per-user install, no admin needed). An MSI is produced next to it in `bundle/msi/`. You can also run from source with `npm run dev`.
+1. Build the installer with `npm run build:desktop` and run `apps/desktop/src-tauri/target/release/bundle/nsis/LyricsDock_0.2.0_x64-setup.exe` (per-user install, no admin needed). An MSI is produced next to it in `bundle/msi/`. You can also run from source with `npm run dev`.
 2. Load the extension in Brave, following **[docs/BRAVE_SETUP.md](docs/BRAVE_SETUP.md)**:
    1. Open `brave://extensions`.
    2. Turn on **Developer mode**.
