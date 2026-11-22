@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>LyricsDock</title>
+  <g transform="translate(0 0) scale(1)">
+    <defs>
+      <linearGradient id="mkbg" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#2b303a"/>
+        <stop offset="1" stop-color="#15171c"/>
+      </linearGradient>
+      <linearGradient id="mknote" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#a9c4ff"/>
+        <stop offset="1" stop-color="#6f97f5"/>
+      </linearGradient>
+    </defs>
+    <rect x="16" y="16" width="480" height="480" rx="112" fill="url(#mkbg)"/>
+    <rect x="17.5" y="17.5" width="477" height="477" rx="110.5" fill="none" stroke="#fff" stroke-opacity="0.12" stroke-width="3"/>
+    <rect x="100" y="166" width="150" height="24" rx="12" fill="#f4f6fb" fill-opacity="0.3"/>
+    <rect x="100" y="234" width="224" height="40" rx="20" fill="#f4f6fb"/>
+    <rect x="100" y="318" width="118" height="24" rx="12" fill="#f4f6fb" fill-opacity="0.3"/>
+    <g fill="url(#mknote)">
+      <rect x="370" y="146" width="22" height="182" rx="11"/>
+      <path d="M381 146 C 410 154 436 172 440 210 C 424 194 404 188 381 190 Z"/>
+      <ellipse cx="350" cy="326" rx="42" ry="32" transform="rotate(-22 350 326)"/>
+    </g>
+  </g>
+</svg>
