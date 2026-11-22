@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="branding/lyricsdock-logo-dark.svg" />
+    <img src="branding/lyricsdock-logo-light.svg" width="360" alt="LyricsDock" />
+  </picture>
+</p>
+
 # LyricsDock
 
 A small, always-on-top lyrics overlay for Windows. Play a song on YouTube or YouTube Music in Brave, minimize the browser, and keep singing along. The current line stays big and bright in a compact dark-glass window in the corner of your screen.
@@ -7,15 +14,21 @@ A small, always-on-top lyrics overlay for Windows. Play a song on YouTube or You
 - **Private.** No telemetry, ads or tracking. No audio is recorded or captured. Only the track title, artist and length are sent to LRCLIB to find lyrics.
 - **Light.** A 3.5 MB app (1.3 MB installer) plus a ~17 KB browser extension. The overlay sleeps between lyric lines instead of polling.
 
-```
-┌──────────────────────────────────────────────┐
-│ ♪  NEVER GONNA GIVE YOU UP — RICK ASTLEY  ··· × │
-│              previous line                   │
-│          CURRENT LINE, BIG AND BRIGHT        │
-│                next line                     │
-│ YouTube               − +0.00s +   ⏸  ⌖  ⚙  │
-└──────────────────────────────────────────────┘
-```
+<p align="center">
+  <img src="docs/screenshots/overlay.png" width="472" alt="LyricsDock overlay showing the previous, current and next lyric line" />
+</p>
+
+## Screenshots
+
+| Not sure which song? It asks instead of guessing                                                       | Brave extension popup                                                                                                         |
+| ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| <img src="docs/screenshots/choose-match-prompt.png" alt="Not sure which song this is, Choose match" /> | <img src="docs/screenshots/extension-popup.png" width="280" alt="Extension popup showing Connected and the detected track" /> |
+| **Sync a cover or live version**                                                                       | **Choose the right recording**                                                                                                |
+| <img src="docs/screenshots/sync-panel.png" alt="Sync panel: click the line being sung" />              | <img src="docs/screenshots/choose-match.png" alt="Find lyrics panel with possible matches" />                                 |
+| **Settings**                                                                                           |                                                                                                                               |
+| <img src="docs/screenshots/settings.png" width="360" alt="Settings window" />                          |                                                                                                                               |
+
+_Screenshots use a made-up song ("Paper Lanterns" by "Nora Vale") with original placeholder lyrics, captured from the real app UI._
 
 ## How it works
 
